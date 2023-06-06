@@ -3,11 +3,14 @@ package com.example.demo.resource;
 import com.example.demo.domain.HttpResponse;
 import com.example.demo.domain.User;
 import com.example.demo.dto.UserDTO;
+import com.example.demo.form.LoginForm;
 import com.example.demo.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,12 +22,29 @@ import java.util.Map;
 
 import static java.time.LocalTime.now;
 import static java.util.Map.*;
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping(path = "/user")
 @RequiredArgsConstructor
 public class UserResource {
     private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+
+    @PostMapping("/login")
+    public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm){
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginForm.getEmail(), loginForm.getPassword()));
+        UserDTO userDTO = userService.getUserByEmail(loginForm.getEmail());
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(now().toString())
+                        .data(of("user", userDTO))
+                        .message("Login Success")
+                        .status(OK)
+                        .statusCode(OK.value())
+                        .build());
+
+    }
 
     @PostMapping("/register")
     public ResponseEntity<HttpResponse> saveUser(@RequestBody @Valid User user){
@@ -34,8 +54,8 @@ public class UserResource {
                        .timeStamp(now().toString())
                        .data(of("user", userDTO))
                        .message("User created")
-                       .status(HttpStatus.CREATED)
-                       .statusCode(HttpStatus.CREATED.value())
+                       .status(CREATED)
+                       .statusCode(CREATED.value())
                        .build());
     }
 
