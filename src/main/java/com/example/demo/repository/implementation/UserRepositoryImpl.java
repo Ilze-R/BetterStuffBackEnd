@@ -30,6 +30,7 @@ import java.util.UUID;
 import static com.example.demo.enumeration.RoleType.ROLE_USER;
 import static com.example.demo.enumeration.VerificationType.ACCOUNT;
 import static com.example.demo.query.UserQuery.*;
+import static com.example.demo.utils.SmsUtils.sendSMS;
 import static java.util.Map.of;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
@@ -142,7 +143,7 @@ return ServletUriComponentsBuilder.fromCurrentContextPath().path("/user/verify/"
         try {
             jdbc.update(DELETE_VERIFICATION_CODE_BY_USER_ID, of("id", user.getId()));
             jdbc.update(INSERT_VERIFICATION_CODE_QUERY, of("userId", user.getId(), "code", verificationCode, "expirationDate", expirationDate));
-            //sendSMS(user.getPhone(), "From: SecureCapita \nVerification code\n" + verificationCode);
+            sendSMS(user.getPhone(), "From: SecureCapita \nVerification code\n" + verificationCode);
         } catch (Exception exception) {
             log.error(exception.getMessage());
             throw new ApiException("An error occurred. Please try again.");
