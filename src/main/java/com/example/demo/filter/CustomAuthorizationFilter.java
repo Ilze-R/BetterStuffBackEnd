@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import static com.example.demo.utils.ExceptionUtils.processError;
 import static java.util.Arrays.asList;
 import static java.util.Map.*;
 import static java.util.Optional.ofNullable;
@@ -37,21 +38,21 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
     protected static String EMAIL_KEY = "email";
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-       try{
-           Map<String, String> values = getRequestValues(request);
-           String token = getToken(request);
-           if(tokenProvider.isTokenValid(values.get(EMAIL_KEY), token)){
-               List<GrantedAuthority> authorities = tokenProvider.getAuthorities(values.get(TOKEN_KEY));
-               Authentication authentication = tokenProvider.getAuthentication(values.get(EMAIL_KEY), authorities, request);
-               SecurityContextHolder.getContext().setAuthentication(authentication);
-           }else{
-               SecurityContextHolder.clearContext();
-           }
-           filterChain.doFilter(request, response);
-       } catch (Exception exception){
-           log.error(exception.getMessage());
-//           processError(request, response, exception);
-       }
+        try {
+            Map<String, String> values = getRequestValues(request);
+            String token = getToken(request);
+            if (tokenProvider.isTokenValid(values.get(EMAIL_KEY), token)) {
+                List<GrantedAuthority> authorities = tokenProvider.getAuthorities(values.get(TOKEN_KEY));
+                Authentication authentication = tokenProvider.getAuthentication(values.get(EMAIL_KEY), authorities, request);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                SecurityContextHolder.clearContext();
+            }
+            filterChain.doFilter(request, response);
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            processError(request, response, exception);
+        }
     }
 
 

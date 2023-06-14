@@ -82,6 +82,17 @@ public class UserResource {
                         .statusCode(OK.value())
                         .build());
     }
+
+    @GetMapping ("/error")
+    public ResponseEntity<HttpResponse> handleError (HttpServletRequest request){
+        return ResponseEntity.badRequest().body(
+                HttpResponse.builder()
+                        .timeStamp(now().toString())
+                        .reason("An error occurred")
+                        .status(BAD_REQUEST)
+                        .statusCode(BAD_REQUEST.value())
+                        .build());
+    }
     private URI getUrl() {
         return URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/user/get/<userId>").toUriString());
     }
