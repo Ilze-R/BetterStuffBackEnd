@@ -4,6 +4,7 @@ import com.example.demo.domain.HttpResponse;
 import com.example.demo.domain.User;
 import com.example.demo.domain.UserPrincipal;
 import com.example.demo.dto.UserDTO;
+import com.example.demo.exception.ApiException;
 import com.example.demo.form.LoginForm;
 import com.example.demo.provider.TokenProvider;
 import com.example.demo.service.RoleService;
@@ -14,7 +15,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -22,6 +22,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 
 import static com.example.demo.dtomapper.UserDTOMapper.toUser;
+import static com.example.demo.utils.ExceptionUtils.processError;
 import static java.time.LocalTime.now;
 import static java.util.Map.*;
 import static org.springframework.http.HttpStatus.*;
@@ -40,11 +41,13 @@ public class UserResource {
 
     @PostMapping("/login")
     public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm){
-        authenticationManager.authenticate(unauthenticated(loginForm.getEmail(), loginForm.getPassword()));
-        UserDTO user= userService.getUserByEmail(loginForm.getEmail());
+        Authentication authentication = authenticate(loginForm.getEmail(), loginForm.getPassword());
+       UserDTO user = getAuthenticatedUser(authentication);
         return  user.isUsingMfa() ? sendVerificationCode(user) : sendResponse(user);
     }
-
+    private UserDTO getAuthenticatedUser(Authentication authentication){
+        return ((UserPrincipal) authentication.getPrincipal()).getUser();
+    }
     @PostMapping("/register")
     public ResponseEntity<HttpResponse> saveUser(@RequestBody @Valid User user){
         UserDTO userDTO = userService.createUser(user);
@@ -93,6 +96,16 @@ public class UserResource {
                         .statusCode(BAD_REQUEST.value())
                         .build());
     }
+
+    private Authentication authenticate(String email, String password){
+        try {
+            Authentication authentication = authenticationManager.authenticate(unauthenticated(email, password));
+            return authentication;
+        }catch (Exception exception){
+            processError(request, response, exception);
+            throw new ApiException(exception.getMessage());
+        }
+    }
     private URI getUrl() {
         return URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/user/get/<userId>").toUriString());
     }
@@ -110,7 +123,7 @@ public class UserResource {
     }
 
     private UserPrincipal getUserPrincipal(UserDTO user) {
-        return new UserPrincipal(toUser(userService.getUserByEmail(user.getEmail())), roleService.getRoleByUserId(user.getId()).getPermission());
+        return new UserPrincipal(toUser(userService.getUserByEmail(user.getEmail())), roleService.getRoleByUserId(user.getId()));
     }
 
     private ResponseEntity<HttpResponse> sendVerificationCode(UserDTO user) {

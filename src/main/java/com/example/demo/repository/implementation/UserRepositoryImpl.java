@@ -109,7 +109,7 @@ return jdbc.queryForObject(COUNT_USER_EMAIL_QUERY, of("email", email), Integer.c
             throw new UsernameNotFoundException("User not found in the satabase");
         }else{
             log.info("User found in the database: {}", email);
-            return new UserPrincipal(user, roleRepository.getRoleByUserId(user.getId()).getPermission());
+            return new UserPrincipal(user, roleRepository.getRoleByUserId(user.getId()));
         }
     }
 
