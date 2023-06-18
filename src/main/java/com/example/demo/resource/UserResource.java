@@ -113,7 +113,7 @@ public class UserResource {
 
     @PostMapping("/resetpassword/{key}/{password}/{confirmPassword}")
     public ResponseEntity<HttpResponse> resetPasswordWithKey(@PathVariable("key") String key, @PathVariable("password") String password,
-                                                          @PathVariable("confirmPassword") String confirmPassword) {
+                                                             @PathVariable("confirmPassword") String confirmPassword) {
         userService.renewPasswordKey(key, password, confirmPassword);
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
@@ -124,8 +124,19 @@ public class UserResource {
                         .build());
     }
 
-    @GetMapping ("/error")
-    public ResponseEntity<HttpResponse> handleError (HttpServletRequest request){
+    @GetMapping("/verify/account/{key}")
+    public ResponseEntity<HttpResponse> verifyAccount(@PathVariable("key") String key) {
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(now().toString())
+                        .message(userService.verifyAccountKey(key).isEnabled() ? "Account already verified" : "Account verified")
+                        .status(OK)
+                        .statusCode(OK.value())
+                        .build());
+    }
+
+    @GetMapping("/error")
+    public ResponseEntity<HttpResponse> handleError(HttpServletRequest request) {
         return ResponseEntity.badRequest().body(
                 HttpResponse.builder()
                         .timeStamp(now().toString())
@@ -135,15 +146,16 @@ public class UserResource {
                         .build());
     }
 
-    private Authentication authenticate(String email, String password){
+    private Authentication authenticate(String email, String password) {
         try {
             Authentication authentication = authenticationManager.authenticate(unauthenticated(email, password));
             return authentication;
-        }catch (Exception exception){
+        } catch (Exception exception) {
             processError(request, response, exception);
             throw new ApiException(exception.getMessage());
         }
     }
+
     private URI getUrl() {
         return URI.create(ServletUriComponentsBuilder.fromCurrentContextPath().path("/user/get/<userId>").toUriString());
     }
@@ -153,7 +165,7 @@ public class UserResource {
                 HttpResponse.builder()
                         .timeStamp(now().toString())
                         .data(of("user", user, "access_token", tokenProvider.createAccessToken(getUserPrincipal(user))
-                        , "refresh_token", tokenProvider.createRefreshToken(getUserPrincipal(user))))
+                                , "refresh_token", tokenProvider.createRefreshToken(getUserPrincipal(user))))
                         .message("Login Success")
                         .status(OK)
                         .statusCode(OK.value())
