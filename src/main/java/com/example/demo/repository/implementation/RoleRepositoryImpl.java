@@ -11,7 +11,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
-import java.util.Map;
 
 import static com.example.demo.enumeration.RoleType.ROLE_USER;
 import static com.example.demo.query.RoleQuery.*;

@@ -4,6 +4,7 @@ import com.example.demo.domain.Role;
 import com.example.demo.domain.User;
 import com.example.demo.domain.UserPrincipal;
 import com.example.demo.dto.UserDTO;
+import com.example.demo.enumeration.VerificationType;
 import com.example.demo.exception.ApiException;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
@@ -29,8 +30,8 @@ import java.util.UUID;
 
 import static com.example.demo.enumeration.RoleType.ROLE_USER;
 import static com.example.demo.enumeration.VerificationType.ACCOUNT;
+import static com.example.demo.enumeration.VerificationType.PASSWORD;
 import static com.example.demo.query.UserQuery.*;
-import static com.example.demo.utils.SmsUtils.sendSMS;
 import static java.util.Map.of;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
@@ -157,6 +158,63 @@ return jdbc.queryForObject(COUNT_USER_EMAIL_QUERY, of("email", email), Integer.c
         } catch (EmptyResultDataAccessException exception) {
 throw new ApiException("Could not find record");
         } catch (Exception exception) {
+            throw new ApiException("An error occurred. Please try again.");
+        }
+    }
+
+    @Override
+    public void resetPassword(String email) {
+        if (getEmailCount(email.trim().toLowerCase()) <= 0)
+            throw new ApiException("There is no account for this email address.");
+        try {
+            String expirationDate = format(addDays(new Date(), 1), DATE_FORMAT);
+            User user = getUserByEmail(email);
+            String verificationUrl = getVerificationUrl(UUID.randomUUID().toString(), PASSWORD.getType());
+            jdbc.update(DELETE_PASSWORD_VERIFICATION_BY_USER_ID_QUERY, of("userId", user.getId()));
+            jdbc.update(INSERT_PASSWORD_VERIFICATION_QUERY, of("userId", user.getId(), "url", verificationUrl, "expirationDate", expirationDate));
+            // send email with url to user
+            log.info("Verification URL: {}", verificationUrl);
+        } catch (Exception exception) {
+            throw new ApiException("An error occurred. Please try again.");
+        }
+    }
+
+    @Override
+    public User verifyPasswordKey(String key) {
+        if(isLinkExpired(key, PASSWORD)) throw new ApiException("The link has expired. Please reset your password again.");
+        try {
+            User user = jdbc.queryForObject(SELECT_USER_BY_PASSWORD_URL_QUERY, of("url", getVerificationUrl(key, PASSWORD.getType())), new UserRowMapper());
+//            jdbc.update("DELETE_USER_FROM_PASSWORD_VERIFICATION_QUERY", of("id", user.getId())); //depends un user case
+            return user;
+        } catch (EmptyResultDataAccessException exception) {
+            log.error(exception.getMessage());
+            throw new ApiException("This link is not valid. Please reset your password again.");
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            throw new ApiException("An error occurred. Please try again.");
+        }
+    }
+
+    @Override
+    public void renewPassword(String key, String password, String confirmPassword) {
+        if(!password.equals(confirmPassword)) throw new ApiException("Passwords don't match. Please try again.");
+        try {
+            jdbc.update(UPDATE_USER_PASSWORD_BY_URL_QUERY, of("password", encoder.encode(password), "url", getVerificationUrl(key, PASSWORD.getType())));
+            jdbc.update(DELETE_VERIFICATION_BY_URL_QUERY, of("url", getVerificationUrl(key, PASSWORD.getType())));
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
+            throw new ApiException("An error occurred. Please try again.");
+        }
+    }
+
+    private Boolean isLinkExpired(String key, VerificationType password) {
+        try {
+            return jdbc.queryForObject(SELECT_EXPIRATION_BY_URL, of("url", getVerificationUrl(key, password.getType())), Boolean.class);
+        } catch (EmptyResultDataAccessException exception) {
+            log.error(exception.getMessage());
+            throw new ApiException("This link is not valid. Please reset your password again.");
+        } catch (Exception exception) {
+            log.error(exception.getMessage());
             throw new ApiException("An error occurred. Please try again.");
         }
     }

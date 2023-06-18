@@ -29,8 +29,8 @@ import java.util.stream.Collectors;
 import static java.time.LocalTime.now;
 import static org.springframework.http.HttpStatus.*;
 
-@ControllerAdvice
-//@RestControllerAdvice
+//@ControllerAdvice
+@RestControllerAdvice
 @Slf4j
 public class HandleException extends ResponseEntityExceptionHandler implements ErrorController {
 
