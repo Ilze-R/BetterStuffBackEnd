@@ -3,6 +3,7 @@ package com.example.demo.service.implementation;
 import com.example.demo.domain.Role;
 import com.example.demo.domain.User;
 import com.example.demo.dto.UserDTO;
+import com.example.demo.form.UpdateForm;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.UserService;
@@ -55,6 +56,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO verifyAccountKey(String key) {
         return mapUserToDTO(userRepository.verifyAccountKey(key));
+    }
+
+    @Override
+    public UserDTO updateUserDetails(UpdateForm user) {
+        return mapUserToDTO(userRepository.updateUserDetails(user));
     }
 
     private UserDTO mapUserToDTO(User user) {

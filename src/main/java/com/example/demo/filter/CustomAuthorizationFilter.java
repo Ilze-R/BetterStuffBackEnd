@@ -63,7 +63,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
     }
 
-    Map<String, String> getRequestValues(HttpServletRequest request){
+    private Map<String, String> getRequestValues(HttpServletRequest request){
       return of(EMAIL_KEY, tokenProvider.getSubject(getToken(request), request), TOKEN_KEY, getToken(request));
     }
 

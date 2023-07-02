@@ -6,6 +6,7 @@ import com.example.demo.domain.UserPrincipal;
 import com.example.demo.dto.UserDTO;
 import com.example.demo.exception.ApiException;
 import com.example.demo.form.LoginForm;
+import com.example.demo.form.UpdateForm;
 import com.example.demo.provider.TokenProvider;
 import com.example.demo.service.RoleService;
 import com.example.demo.service.UserService;
@@ -23,7 +24,8 @@ import java.net.URI;
 import java.time.LocalDateTime;
 
 import static com.example.demo.dtomapper.UserDTOMapper.toUser;
-import static com.example.demo.utils.ExceptionUtils.processError;
+import static com.example.demo.utils.UserUtils.getAuthenticatedUser;
+import static com.example.demo.utils.UserUtils.getLoggedInUser;
 import static java.time.LocalTime.now;
 import static java.util.Map.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -45,12 +47,10 @@ public class UserResource {
     @PostMapping("/login")
     public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm){
         Authentication authentication = authenticate(loginForm.getEmail(), loginForm.getPassword());
-       UserDTO user = getAuthenticatedUser(authentication);
+       UserDTO user = getLoggedInUser(authentication);
         return  user.isUsingMfa() ? sendVerificationCode(user) : sendResponse(user);
     }
-    private UserDTO getAuthenticatedUser(Authentication authentication){
-        return ((UserPrincipal) authentication.getPrincipal()).getUser();
-    }
+
     @PostMapping("/register")
     public ResponseEntity<HttpResponse> saveUser(@RequestBody @Valid User user){
         UserDTO userDTO = userService.createUser(user);
@@ -65,12 +65,24 @@ public class UserResource {
     }
     @GetMapping ("/profile")
     public ResponseEntity<HttpResponse> profile (Authentication authentication){
-        UserDTO user = userService.getUserByEmail(authentication.getName());
+       UserDTO user = userService.getUserByEmail(getAuthenticatedUser(authentication).getEmail());
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .timeStamp(now().toString())
                         .data(of("user", user))
                         .message("Profile Retrieved")
+                        .status(OK)
+                        .statusCode(OK.value())
+                        .build());
+    }
+    @PatchMapping ("/update")
+    public ResponseEntity<HttpResponse> updateUser (@RequestBody @Valid UpdateForm user){
+        UserDTO updatedUser = userService.updateUserDetails(user);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(now().toString())
+                        .data(of("user", updatedUser))
+                        .message("User updated")
                         .status(OK)
                         .statusCode(OK.value())
                         .build());

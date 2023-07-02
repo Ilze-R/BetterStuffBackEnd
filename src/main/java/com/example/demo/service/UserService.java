@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.domain.User;
 import com.example.demo.dto.UserDTO;
+import com.example.demo.form.UpdateForm;
 
 public interface UserService {
     UserDTO createUser(User user);
@@ -17,4 +18,6 @@ public interface UserService {
     void renewPasswordKey(String key, String password, String confirmPassword);
 
     UserDTO verifyAccountKey(String key);
+
+    UserDTO updateUserDetails(UpdateForm user);
 }

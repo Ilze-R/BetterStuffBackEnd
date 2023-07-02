@@ -2,6 +2,7 @@ package com.example.demo.repository;
 
 import com.example.demo.domain.User;
 import com.example.demo.dto.UserDTO;
+import com.example.demo.form.UpdateForm;
 
 import java.util.Collection;
 
@@ -25,4 +26,6 @@ public interface UserRepository <T extends User>{
     void renewPassword(String key, String password, String confirmPassword);
 
     T verifyAccountKey(String key);
+
+    T updateUserDetails(UpdateForm user);
 }
