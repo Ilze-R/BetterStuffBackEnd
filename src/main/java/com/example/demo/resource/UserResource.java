@@ -161,7 +161,7 @@ public class UserResource {
                             .timeStamp(now().toString())
                             .data(of("user", user, "access_token", tokenProvider.createAccessToken(getUserPrincipal(user))
                                     , "refresh_token", token))
-                            .message("Token refresh")
+                            .message("Token refreshed")
                             .status(OK)
                             .statusCode(OK.value())
                             .build());
