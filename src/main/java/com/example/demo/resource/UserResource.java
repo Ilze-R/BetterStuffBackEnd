@@ -7,6 +7,7 @@ import com.example.demo.dto.UserDTO;
 import com.example.demo.exception.ApiException;
 import com.example.demo.form.LoginForm;
 import com.example.demo.form.UpdateForm;
+import com.example.demo.form.UpdatePasswordForm;
 import com.example.demo.provider.TokenProvider;
 import com.example.demo.service.RoleService;
 import com.example.demo.service.UserService;
@@ -135,6 +136,19 @@ public class UserResource {
                 HttpResponse.builder()
                         .timeStamp(LocalDateTime.now().toString())
                         .message("Password reset successfully")
+                        .status(OK)
+                        .statusCode(OK.value())
+                        .build());
+    }
+
+    @PatchMapping("/update/password")
+    public ResponseEntity<HttpResponse> updatePassword(Authentication authentication, @RequestBody @Valid UpdatePasswordForm form) {
+UserDTO userDTO = getAuthenticatedUser(authentication);
+        userService.updatePassword(userDTO.getId(), form.getCurrentPassword(), form.getNewPassword(), form.getConfirmNewPassword());
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(now().toString())
+                        .message("Password updated successfully")
                         .status(OK)
                         .statusCode(OK.value())
                         .build());
