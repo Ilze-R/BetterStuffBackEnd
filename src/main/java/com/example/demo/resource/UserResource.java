@@ -170,6 +170,19 @@ UserDTO userDTO = getAuthenticatedUser(authentication);
                         .build());
     }
 
+    @PatchMapping("/togglemfa")
+    public ResponseEntity<HttpResponse> toggleMfa(Authentication authentication) {
+        UserDTO user = userService.toggleMfa(getAuthenticatedUser(authentication).getEmail());
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .data(of("user", user, "roles", roleService.getRoles()))
+                        .timeStamp(now().toString())
+                        .message("Multi-Factor Authentication updated")
+                        .status(OK)
+                        .statusCode(OK.value())
+                        .build());
+    }
+
     @PatchMapping("/update/password")
     public ResponseEntity<HttpResponse> updatePassword(Authentication authentication, @RequestBody @Valid UpdatePasswordForm form) {
         UserDTO userDTO = getAuthenticatedUser(authentication);
