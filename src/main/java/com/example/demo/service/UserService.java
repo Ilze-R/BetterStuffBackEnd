@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.domain.User;
 import com.example.demo.dto.UserDTO;
 import com.example.demo.form.UpdateForm;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
     UserDTO createUser(User user);
@@ -30,4 +31,6 @@ public interface UserService {
     void updateAccountSettings(Long userId, Boolean enabled, Boolean notLocked);
 
     UserDTO toggleMfa(String email);
+
+    void updateImage(UserDTO user, MultipartFile image);
 }

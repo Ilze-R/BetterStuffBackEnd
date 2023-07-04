@@ -9,6 +9,7 @@ import com.example.demo.repository.UserRepository;
 import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.example.demo.dtomapper.UserDTOMapper.fromUser;
 
@@ -65,7 +66,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO getUserById(Long userId) {
-       return mapUserToDTO(userRepository.get(userId));
+        return mapUserToDTO(userRepository.get(userId));
     }
 
     @Override
@@ -85,7 +86,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO toggleMfa(String email) {
-   return mapUserToDTO(userRepository.toggleMfa(email));
+        return mapUserToDTO(userRepository.toggleMfa(email));
+    }
+
+    @Override
+    public void updateImage(UserDTO user, MultipartFile image) {
+        userRepository.updateImage(user, image);
     }
 
     private UserDTO mapUserToDTO(User user) {

@@ -20,9 +20,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +36,7 @@ import static java.time.LocalTime.now;
 import static java.util.Map.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.MediaType.IMAGE_PNG_VALUE;
 import static org.springframework.security.authentication.UsernamePasswordAuthenticationToken.unauthenticated;
 
 @RestController
@@ -48,27 +52,28 @@ public class UserResource {
     private final HttpServletResponse response;
 
     @PostMapping("/login")
-    public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm){
+    public ResponseEntity<HttpResponse> login(@RequestBody @Valid LoginForm loginForm) {
         Authentication authentication = authenticate(loginForm.getEmail(), loginForm.getPassword());
-       UserDTO user = getLoggedInUser(authentication);
-        return  user.isUsingMfa() ? sendVerificationCode(user) : sendResponse(user);
+        UserDTO user = getLoggedInUser(authentication);
+        return user.isUsingMfa() ? sendVerificationCode(user) : sendResponse(user);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<HttpResponse> saveUser(@RequestBody @Valid User user){
+    public ResponseEntity<HttpResponse> saveUser(@RequestBody @Valid User user) {
         UserDTO userDTO = userService.createUser(user);
         return ResponseEntity.created(getUrl()).body(
-               HttpResponse.builder()
-                       .timeStamp(now().toString())
-                       .data(of("user", userDTO))
-                       .message("User created")
-                       .status(CREATED)
-                       .statusCode(CREATED.value())
-                       .build());
+                HttpResponse.builder()
+                        .timeStamp(now().toString())
+                        .data(of("user", userDTO))
+                        .message("User created")
+                        .status(CREATED)
+                        .statusCode(CREATED.value())
+                        .build());
     }
-    @GetMapping ("/profile")
-    public ResponseEntity<HttpResponse> profile (Authentication authentication){
-       UserDTO user = userService.getUserByEmail(getAuthenticatedUser(authentication).getEmail());
+
+    @GetMapping("/profile")
+    public ResponseEntity<HttpResponse> profile(Authentication authentication) {
+        UserDTO user = userService.getUserByEmail(getAuthenticatedUser(authentication).getEmail());
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .timeStamp(now().toString())
@@ -78,8 +83,9 @@ public class UserResource {
                         .statusCode(OK.value())
                         .build());
     }
-    @PatchMapping ("/update")
-    public ResponseEntity<HttpResponse> updateUser (@RequestBody @Valid UpdateForm user) throws InterruptedException {
+
+    @PatchMapping("/update")
+    public ResponseEntity<HttpResponse> updateUser(@RequestBody @Valid UpdateForm user) throws InterruptedException {
         TimeUnit.SECONDS.sleep(3);
         UserDTO updatedUser = userService.updateUserDetails(user);
         return ResponseEntity.ok().body(
@@ -91,8 +97,9 @@ public class UserResource {
                         .statusCode(OK.value())
                         .build());
     }
-    @GetMapping ("/verify/code/{email}/{code}")
-    public ResponseEntity<HttpResponse> verifyCode(@PathVariable("email") String email, @PathVariable("code") String code){
+
+    @GetMapping("/verify/code/{email}/{code}")
+    public ResponseEntity<HttpResponse> verifyCode(@PathVariable("email") String email, @PathVariable("code") String code) {
         UserDTO user = userService.verifyCode(email, code);
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
@@ -116,6 +123,7 @@ public class UserResource {
                         .statusCode(OK.value())
                         .build());
     }
+
     @GetMapping("/verify/password/{key}")
     public ResponseEntity<HttpResponse> verifyPasswordUrl(@PathVariable("key") String key) {
         UserDTO user = userService.verifyPasswordKey(key);
@@ -144,7 +152,7 @@ public class UserResource {
 
     @PatchMapping("/update/role/{roleName}")
     public ResponseEntity<HttpResponse> updateUserRole(Authentication authentication, @PathVariable("roleName") String roleName) {
-UserDTO userDTO = getAuthenticatedUser(authentication);
+        UserDTO userDTO = getAuthenticatedUser(authentication);
         userService.updateUserRole(userDTO.getId(), roleName);
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
@@ -181,6 +189,25 @@ UserDTO userDTO = getAuthenticatedUser(authentication);
                         .status(OK)
                         .statusCode(OK.value())
                         .build());
+    }
+
+    @PatchMapping("/update/image")
+    public ResponseEntity<HttpResponse> updateProfileImage(Authentication authentication, @RequestParam("image") MultipartFile image) {
+        UserDTO user = getAuthenticatedUser(authentication);
+        userService.updateImage(user, image);
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .data(of("user", userService.getUserById(user.getId()), "roles", roleService.getRoles()))
+                        .timeStamp(now().toString())
+                        .message("Profile image updated")
+                        .status(OK)
+                        .statusCode(OK.value())
+                        .build());
+    }
+
+    @GetMapping(value = "/image/{fileName}", produces = IMAGE_PNG_VALUE)
+    public byte[] getProfileImage(@PathVariable("fileName") String fileName) throws Exception {
+        return Files.readAllBytes(Paths.get(System.getProperty("user.home") + "/Downloads/images/" + fileName));
     }
 
     @PatchMapping("/update/password")
