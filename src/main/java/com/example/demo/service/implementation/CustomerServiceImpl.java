@@ -2,19 +2,23 @@ package com.example.demo.service.implementation;
 
 import com.example.demo.domain.Customer;
 import com.example.demo.domain.Invoice;
+import com.example.demo.domain.Stats;
 import com.example.demo.repository.CustomerRepository;
 import com.example.demo.repository.InvoiceRepository;
+import com.example.demo.rowmapper.StatsRowMapper;
 import com.example.demo.service.CustomerService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Map;
 
+import static com.example.demo.query.CustomerQuery.STATS_QUERY;
 import static org.springframework.data.domain.PageRequest.*;
 
 @Service
@@ -24,6 +28,7 @@ import static org.springframework.data.domain.PageRequest.*;
 public class CustomerServiceImpl implements CustomerService {
     private  final CustomerRepository customerRepository;
     private final InvoiceRepository invoiceRepository;
+    private final NamedParameterJdbcTemplate jdbc;
     @Override
     public Customer createCustomer(Customer customer) {
         customer.setCreatedAt(new Date());
@@ -77,5 +82,10 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Invoice getInvoice(Long id) {
         return invoiceRepository.findById(id).get();
+    }
+
+    @Override
+    public Stats getStats() {
+        return jdbc.queryForObject(STATS_QUERY, Map.of(), new StatsRowMapper());
     }
 }

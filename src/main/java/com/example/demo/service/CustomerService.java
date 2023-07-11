@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.domain.Customer;
 import com.example.demo.domain.Invoice;
+import com.example.demo.domain.Stats;
 import org.springframework.data.domain.Page;
 
 public interface CustomerService {
@@ -17,5 +18,7 @@ public interface CustomerService {
 void addInvoiceToCustomer(Long id, Invoice invoice);
 
     Invoice getInvoice(Long id);
+
+    Stats getStats();
 }
 

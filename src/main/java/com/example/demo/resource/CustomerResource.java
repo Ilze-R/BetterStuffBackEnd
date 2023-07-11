@@ -31,7 +31,8 @@ public class CustomerResource {
         return ResponseEntity.ok(
                 HttpResponse.builder()
                         .timeStamp(now().toString())
-                        .data(of("user", userService.getUserByEmail(user.getEmail()), "customers", customerService.getCustomers(page.orElse(0), size.orElse(10))))
+                        .data(of("user", userService.getUserByEmail(user.getEmail()), "page", customerService.getCustomers(page.orElse(0), size.orElse(10)),
+                                "stats", customerService.getStats()))
                         .message("Customers retrieved")
                         .status(OK)
                         .statusCode(OK.value())
