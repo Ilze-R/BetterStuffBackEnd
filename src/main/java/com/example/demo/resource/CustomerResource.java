@@ -70,7 +70,7 @@ public class CustomerResource {
         return ResponseEntity.ok(
                 HttpResponse.builder()
                         .timeStamp(now().toString())
-                        .data(of("user", userService.getUserByEmail(user.getEmail()), "customers", customerService.searchCustomers(name.orElse(""), page.orElse(0), size.orElse(10))))
+                        .data(of("user", userService.getUserByEmail(user.getEmail()), "page", customerService.searchCustomers(name.orElse(""), page.orElse(0), size.orElse(10))))
                         .message("Customers retrieved")
                         .status(OK)
                         .statusCode(OK.value())
@@ -102,7 +102,7 @@ public class CustomerResource {
                                 .build());
     }
 
-    @PostMapping("/invoice/new")
+    @GetMapping("/invoice/new")
     public ResponseEntity<HttpResponse> newInvoice(@AuthenticationPrincipal UserDTO user) {
         return ResponseEntity.ok(
                         HttpResponse.builder()
@@ -122,7 +122,7 @@ public class CustomerResource {
                 HttpResponse.builder()
                         .timeStamp(now().toString())
                         .data(of("user", userService.getUserByEmail(user.getEmail()),
-                                "invoices", customerService.getInvoices(page.orElse(0), size.orElse(10))))
+                                "page", customerService.getInvoices(page.orElse(0), size.orElse(10))))
                         .message("Invoice retrieved")
                         .status(OK)
                         .statusCode(OK.value())
@@ -149,7 +149,7 @@ customerService.addInvoiceToCustomer(id, invoice);
                         .timeStamp(now().toString())
                         .data(of("user", userService.getUserByEmail(user.getEmail()),
                                 "customers", customerService.getCustomers()))
-                        .message("Customers retrieved")
+                        .message(String.format("Invoice added to customer with ID: %s", id))
                         .status(OK)
                         .statusCode(OK.value())
                         .build());
