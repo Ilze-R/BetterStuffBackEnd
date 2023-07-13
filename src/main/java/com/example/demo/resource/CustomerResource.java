@@ -4,14 +4,20 @@ import com.example.demo.domain.Customer;
 import com.example.demo.domain.HttpResponse;
 import com.example.demo.domain.Invoice;
 import com.example.demo.dto.UserDTO;
+import com.example.demo.report.CustomerReport;
 import com.example.demo.service.CustomerService;
 import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static java.time.LocalTime.now;
@@ -131,10 +137,11 @@ public class CustomerResource {
 
     @GetMapping("/invoice/get/{id}")
     public ResponseEntity<HttpResponse> getInvoice(@AuthenticationPrincipal UserDTO user, @PathVariable("id") Long id) {
+        Invoice invoice = customerService.getInvoice(id);
         return ResponseEntity.ok(
                 HttpResponse.builder()
                         .timeStamp(now().toString())
-                        .data(of("user", userService.getUserByEmail(user.getEmail()), "invoice", customerService.getInvoice(id)))
+                        .data(of("user", userService.getUserByEmail(user.getEmail()), "invoice", invoice , "customer", customerService.getInvoice(id).getCustomer()))
                         .message("Invoice retrieved")
                         .status(OK)
                         .statusCode(OK.value())
@@ -153,6 +160,19 @@ customerService.addInvoiceToCustomer(id, invoice);
                         .status(OK)
                         .statusCode(OK.value())
                         .build());
+    }
+
+    @GetMapping("/download/report")
+    public ResponseEntity<Resource> downloadReport() {
+        List<Customer> customers = new ArrayList<>();
+        customerService.getCustomers().iterator().forEachRemaining(customers::add);
+        CustomerReport report = new CustomerReport(customers);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("File-Name", "customer-report.xlsx");
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment;File-Name-customer-report.xlsx");
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
+                .headers(headers).body(report.export());
+
     }
 
 }
