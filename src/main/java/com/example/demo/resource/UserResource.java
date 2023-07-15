@@ -7,10 +7,7 @@ import com.example.demo.dto.UserDTO;
 import com.example.demo.enumeration.EventType;
 import com.example.demo.event.NewUserEvent;
 import com.example.demo.exception.ApiException;
-import com.example.demo.form.LoginForm;
-import com.example.demo.form.SettingsForm;
-import com.example.demo.form.UpdateForm;
-import com.example.demo.form.UpdatePasswordForm;
+import com.example.demo.form.*;
 import com.example.demo.provider.TokenProvider;
 import com.example.demo.service.EventService;
 import com.example.demo.service.RoleService;
@@ -131,6 +128,17 @@ public class UserResource {
                         .build());
     }
 
+    @GetMapping("/verify/account/{key}")
+    public ResponseEntity<HttpResponse> verifyAccount(@PathVariable("key") String key) {
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .timeStamp(now().toString())
+                        .message(userService.verifyAccountKey(key).isEnabled() ? "Account already verified" : "Account verified")
+                        .status(OK)
+                        .statusCode(OK.value())
+                        .build());
+    }
+
     @GetMapping("/verify/password/{key}")
     public ResponseEntity<HttpResponse> verifyPasswordUrl(@PathVariable("key") String key) {
         UserDTO user = userService.verifyPasswordKey(key);
@@ -144,10 +152,9 @@ public class UserResource {
                         .build());
     }
 
-    @PostMapping("/resetpassword/{key}/{password}/{confirmPassword}")
-    public ResponseEntity<HttpResponse> resetPasswordWithKey(@PathVariable("key") String key, @PathVariable("password") String password,
-                                                             @PathVariable("confirmPassword") String confirmPassword) {
-        userService.renewPasswordKey(key, password, confirmPassword);
+    @PutMapping("/new/password")
+    public ResponseEntity<HttpResponse> resetPasswordWithKey(@RequestBody @Valid NewPasswordForm form) {
+        userService.updatePassword(form.getUserId(), form.getPassword(), form.getConfirmPassword());
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .timeStamp(LocalDateTime.now().toString())
@@ -236,16 +243,7 @@ public class UserResource {
                         .build());
     }
 
-    @GetMapping("/verify/account/{key}")
-    public ResponseEntity<HttpResponse> verifyAccount(@PathVariable("key") String key) {
-        return ResponseEntity.ok().body(
-                HttpResponse.builder()
-                        .timeStamp(now().toString())
-                        .message(userService.verifyAccountKey(key).isEnabled() ? "Account already verified" : "Account verified")
-                        .status(OK)
-                        .statusCode(OK.value())
-                        .build());
-    }
+
 
     @GetMapping("/refresh/token")
     public ResponseEntity<HttpResponse> refreshToken(HttpServletRequest request) {
