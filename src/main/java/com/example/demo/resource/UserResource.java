@@ -154,7 +154,7 @@ public class UserResource {
 
     @PutMapping("/new/password")
     public ResponseEntity<HttpResponse> resetPasswordWithKey(@RequestBody @Valid NewPasswordForm form) {
-        userService.updatePassword(form.getUserId(), form.getPassword(), form.getConfirmPassword());
+        userService.updatePassword(form.getUserId(), form.getPassword(), form.getConfirmedPassword());
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .timeStamp(LocalDateTime.now().toString())

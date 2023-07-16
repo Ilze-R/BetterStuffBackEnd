@@ -10,6 +10,7 @@ import com.example.demo.form.UpdateForm;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.rowmapper.UserRowMapper;
+import com.example.demo.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -32,6 +33,7 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static com.example.demo.enumeration.RoleType.ROLE_USER;
 import static com.example.demo.enumeration.VerificationType.ACCOUNT;
@@ -54,6 +56,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
     private final NamedParameterJdbcTemplate jdbc;
     private final RoleRepository<Role> roleRepository;
     private final BCryptPasswordEncoder encoder;
+    private final EmailService emailService;
     @Override
     public User create(User user) {
         // Check the email is unique
@@ -71,6 +74,7 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
             //Save URL in verification table
             jdbc.update(INSERT_ACCOUNT_VERIFICATION_URL_QUERY, of("userId", user.getId(), "url", verificationUrl));
             //Send email to user with verification URL
+            sendEmail(user.getFirstName(), user.getEmail(), verificationUrl, ACCOUNT);
 //            emailService.sendVerificationUrl(user.getFirstName(), user.getEmail(), verificationUrl, ACCOUNT.getType());
             user.setEnabled(false);
             user.setNotLocked(true);
@@ -82,6 +86,33 @@ public class UserRepositoryImpl implements UserRepository<User>, UserDetailsServ
         }
     }
 
+    private void sendEmail(String firstName, String email, String verificationUrl, VerificationType verificationType) {
+        CompletableFuture.runAsync(() -> emailService.sendVerificationEmail(firstName, email, verificationUrl, verificationType));
+//        CompletableFuture.runAsync(() -> {
+//            try {
+//                emailService.sendVerificationEmail(firstName, email, verificationUrl, verificationType);
+//            } catch (Exception exception) {
+//                throw new ApiException("Unable to send email");
+//            }
+//        });
+//        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+//            try{
+//                emailService.sendVerificationEmail(firstName, email, verificationUrl, verificationType);
+//            } catch (Exception exception){
+//                throw new ApiException("Unable to send email");
+//            }
+//        });
+//        CompletableFuture<Void> future = CompletableFuture.runAsync(new Runnable() {
+//            @Override
+//            public void run() {
+//                try{
+//                    emailService.sendVerificationEmail(firstName, email, verificationUrl, verificationType);
+//                } catch (Exception exception){
+//                    throw new ApiException("Unable to send email");
+//                }
+//            }
+//        });
+    }
 
 
     @Override
@@ -122,7 +153,7 @@ return jdbc.queryForObject(COUNT_USER_EMAIL_QUERY, of("email", email), Integer.c
         User user = getUserByEmail(email);
         if(user == null){
             log.error("User not found in the database");
-            throw new UsernameNotFoundException("User not found in the satabase");
+            throw new UsernameNotFoundException("User not found in the database");
         }else{
             log.info("User found in the database: {}", email);
             return new UserPrincipal(user, roleRepository.getRoleByUserId(user.getId()));
@@ -149,7 +180,7 @@ return jdbc.queryForObject(COUNT_USER_EMAIL_QUERY, of("email", email), Integer.c
         try {
             jdbc.update(DELETE_VERIFICATION_CODE_BY_USER_ID, of("id", user.getId()));
             jdbc.update(INSERT_VERIFICATION_CODE_QUERY, of("userId", user.getId(), "code", verificationCode, "expirationDate", expirationDate));
-//            sendSMS(user.getPhone(), "From: SecureCapita \nVerification code\n" + verificationCode);
+//            sendSMS(user.getPhone(), "From: Invoice Management \nVerification code\n" + verificationCode);
             log.info("Verification Code: {}", verificationCode);
         } catch (Exception exception) {
             log.error(exception.getMessage());
@@ -188,6 +219,7 @@ throw new ApiException("Could not find record");
             jdbc.update(DELETE_PASSWORD_VERIFICATION_BY_USER_ID_QUERY, of("userId", user.getId()));
             jdbc.update(INSERT_PASSWORD_VERIFICATION_QUERY, of("userId", user.getId(), "url", verificationUrl, "expirationDate", expirationDate));
             // send email with url to user
+            sendEmail(user.getFirstName(), email, verificationUrl, PASSWORD);
             log.info("Verification URL: {}", verificationUrl);
         } catch (Exception exception) {
             throw new ApiException("An error occurred. Please try again.");

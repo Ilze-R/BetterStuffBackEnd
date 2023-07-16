@@ -13,5 +13,5 @@ public class NewPasswordForm {
     @NotEmpty(message = "Password cannot be empty")
     private String password;
     @NotEmpty(message = "Confirm password cannot be empty")
-    private String confirmPassword;
+    private String confirmedPassword;
 }
