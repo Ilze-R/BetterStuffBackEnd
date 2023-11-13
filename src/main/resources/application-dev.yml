@@ -1,7 +1,7 @@
 #Database:
 MYSQL_USERNAME: root
-MYSQL_PASSWORD: sniegavirs
-MYSQL_HOST: localhost
+MYSQL_PASSWORD: ${STACKHERO_MYSQL_ROOT_PASSWORD}
+MYSQL_HOST: ${STACKHERO_MYSQL_HOST}
 MYSQL_PORT: 3306
 MYSQL_DATABASE: invoiceapp
 
@@ -14,9 +14,9 @@ EMAIL_HOST: smtp.gmail.com
 EMAIL_PORT: 587
 EMAIL_ID: dizvabole@gmail.com
 EMAIL_PASSWORD: najuhxhmhjqovypk
-VERIFY_EMAIL_HOST: http://localhost:${CONTAINER_PORT}
+VERIFY_EMAIL_HOST: http://${STACKHERO_MYSQL_HOST}:${CONTAINER_PORT}
 
-UI_APP_URL: http://localhost:4200
+UI_APP_URL: http://${STACKHERO_MYSQL_HOST}:4200
 
 JWT_SECRET: mysupercomplexsecret
 
