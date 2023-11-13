@@ -18,7 +18,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Date;
 import java.util.List;
@@ -36,8 +35,8 @@ public class TokenProvider {
     private static final String CUSTOMER_MANAGEMENT_SERVICE = "CUSTOMER_MANAGEMENT_SERVICE";
     private static final String AUTHORITIES = "authorities";
 //    5 days
-    private static final long ACCESS_TOKEN_EXPIRATION_TIME = 1_800_000;
-    private static final long REFRESH_TOKEN_EXPIRATION_TIME = 432_000_000;
+    private static final long ACCESS_TOKEN_EXPIRATION_TIME = 7_200_000; // 2 hours
+    private static final long REFRESH_TOKEN_EXPIRATION_TIME = 2_592_000_000L; // 30 days
     public static final String TOKEN_CANNOT_BE_VERIFIED = "Token cannot be verified";
     @Value("${jwt.secret")
     private String secret;

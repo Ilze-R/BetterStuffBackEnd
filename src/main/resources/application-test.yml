@@ -7,13 +7,13 @@ MYSQL_DATABASE: invoiceapp
 
 #Server config:
 CONTAINER_PORT: 8085
-ACTIVE_PROFILE: prod
+ACTIVE_PROFILE: test
 
 #Email config:
 EMAIL_HOST: smtp.gmail.com
 EMAIL_PORT: 587
 EMAIL_ID: dizvabole@gmail.com
-EMAIL_PASSWORD: hpnj cjgl qvpx
+EMAIL_PASSWORD: najuhxhmhjqovypk
 VERIFY_EMAIL_HOST: http://localhost:${CONTAINER_PORT}
 
 UI_APP_URL: http://localhost:4200

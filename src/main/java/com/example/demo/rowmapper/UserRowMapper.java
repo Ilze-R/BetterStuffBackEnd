@@ -1,6 +1,5 @@
 package com.example.demo.rowmapper;
 
-import com.example.demo.domain.Role;
 import com.example.demo.domain.User;
 import org.springframework.jdbc.core.RowMapper;
 
