@@ -20,7 +20,7 @@ public class EmailServiceImpl implements EmailService {
     public void sendVerificationEmail(String firstName, String email, String verificationUrl, VerificationType verificationType) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("dizvabole@gmail.com");
+            message.setFrom("????@gmail.com");
             message.setTo(email);
             message.setText(getEmailMessage(firstName, verificationUrl, verificationType));
             message.setSubject(String.format("Invoice Management - %s Verification Email", StringUtils.capitalize(verificationType.getType())));
