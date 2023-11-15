@@ -1,1 +1,1 @@
-web: java -jar target/demo-0.0.1-SNAPSHOT.jar
+web: java -jar /tmp/build_6a49d6a8/target/demo-0.0.1-SNAPSHOT.jar
