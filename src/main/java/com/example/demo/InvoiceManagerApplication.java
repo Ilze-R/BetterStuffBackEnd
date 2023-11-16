@@ -29,7 +29,7 @@ public class InvoiceManagerApplication {
 		UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
 		CorsConfiguration corsConfiguration = new CorsConfiguration();
 		corsConfiguration.setAllowCredentials(true);
-		corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:3000", "https://invoice-app-95342-7c6c72d5efce.herokuapp.com"));
+		corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200", "http://localhost:3000", "https://git.heroku.com/invoice-app-frontend-95342.git"));
 		//corsConfiguration.setAllowedOrigins(Arrays.asList("*"));
 		corsConfiguration.setAllowedHeaders(Arrays.asList("Origin", "Access-Control-Allow-Origin", "Content-Type",
 				"Accept", "Jwt-Token", "Authorization", "Origin", "Accept", "X-Requested-With",
