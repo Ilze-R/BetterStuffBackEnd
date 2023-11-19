@@ -1,9 +1,13 @@
 package com.example.demo;
 
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.EnumerablePropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -41,5 +45,18 @@ public class InvoiceManagerApplication {
 		return new CorsFilter(urlBasedCorsConfigurationSource);
 	}
 
+	@Bean
+	public ApplicationRunner printEnvProperties(Environment environment) {
+		return args -> {
+			System.out.println("=============== Properties Start ===============");
+			((ConfigurableEnvironment) environment).getPropertySources().stream()
+					.filter(ps -> ps instanceof EnumerablePropertySource)
+					.map(ps -> ((EnumerablePropertySource<?>) ps).getPropertyNames())
+					.flatMap(Arrays::stream)
+					.distinct()
+					.forEach(prop -> System.out.println(prop + ": " + environment.getProperty(prop)));
+			System.out.println("=============== Properties End   ===============");
+		};
+	}
 
 }
