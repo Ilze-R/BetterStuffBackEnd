@@ -45,7 +45,6 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
-
 //    @Override
 //    public void sendVerificationEmail(String firstName, String email, String verificationUrl, VerificationType verificationType) {
 //        try {
