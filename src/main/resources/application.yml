@@ -19,7 +19,7 @@ spring:
     generate-ddl: true
     show-sql: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         globally_quoted_identifiers: true
@@ -27,7 +27,7 @@ spring:
         format_sql: true
   sql:
     init:
-      mode: always
+      mode: never
       continue-on-error: false
   mail:
     host: ${EMAIL_HOST}
